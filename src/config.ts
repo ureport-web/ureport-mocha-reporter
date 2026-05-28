@@ -18,6 +18,9 @@ export interface UReportMochaReporterOptions {
   saveRelations?: boolean;
   autoDetectPlatform?: boolean;
   outputFile?: string;
+  /** Keys passed to ureport() that should be stored as info.quickInfo entries
+   *  instead of scalar info fields. Excluded from relation customs. */
+  quickInfoAnnotations?: string[];
 }
 
 export const DEFAULT_OPTIONS = {
@@ -41,15 +44,28 @@ function coerceBool(value: unknown, defaultVal: boolean): boolean {
 }
 
 export function validateOptions(options: Partial<UReportMochaReporterOptions>): UReportMochaReporterOptions {
+  // Merge env vars as fallback for required fields.
+  // This handles two cases:
+  //   1. User prefers env vars (CI-friendly, no mocharc needed for secrets)
+  //   2. Mocha coerces reporter-option objects to {"[object Object]":true} when
+  //      the config file uses an object literal — env vars recover the required fields.
+  const merged: Partial<UReportMochaReporterOptions> = {
+    serverUrl: process.env['UREPORT_SERVER_URL'],
+    apiToken:  process.env['UREPORT_API_TOKEN'],
+    product:   process.env['UREPORT_PRODUCT'],
+    type:      process.env['UREPORT_TYPE'],
+    ...options,
+  };
+
   for (const field of REQUIRED_FIELDS) {
-    if (!options[field]) {
+    if (!merged[field]) {
       throw new Error(`[ureport-mocha-reporter] Missing required option: "${field}"`);
     }
   }
 
   return {
     ...DEFAULT_OPTIONS,
-    ...options,
+    ...merged,
     buildNumber: options.buildNumber ?? Date.now(),
     // Coerce string booleans from Mocha CLI reporter-options parsing
     saveRelations: coerceBool(options.saveRelations, DEFAULT_OPTIONS.saveRelations),

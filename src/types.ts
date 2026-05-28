@@ -34,6 +34,18 @@ export interface UReportFailure {
   stack_trace?: string;
 }
 
+export interface UReportStepAttachment {
+  'content-type': 'json' | 'text';
+  content: string;
+}
+
+export interface UReportStep {
+  detail: string;
+  status: 'PASS' | 'FAIL';
+  steps?: UReportStep[];
+  attachment?: UReportStepAttachment;
+}
+
 export type UReportStatus = 'PASS' | 'FAIL' | 'SKIP' | 'RERUN_PASS';
 
 export interface UReportTestInfo {
@@ -56,4 +68,7 @@ export interface UReportTestPayload {
   is_rerun: boolean;
   failure?: UReportFailure;
   info?: UReportTestInfo;
+  body?: UReportStep[];
+  setup?: UReportStep[];
+  teardown?: UReportStep[];
 }

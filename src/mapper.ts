@@ -1,7 +1,7 @@
 import { basename, relative, dirname } from 'path';
 import { release } from 'os';
 import type Mocha from 'mocha';
-import type { UReportTestPayload, UReportTestRelationPayload, UReportTestInfo, UReportStatus } from './types.js';
+import type { UReportTestPayload, UReportTestRelationPayload, UReportTestInfo, UReportStatus, UReportStep } from './types.js';
 import type { UReportMochaReporterOptions } from './config.js';
 import type { UReportMeta } from './helper.js';
 
@@ -86,6 +86,9 @@ export function mapTestToPayload(
   const allTags = [...titleTags, ...(Array.isArray(meta?.tags) ? (meta.tags as string[]) : [])];
   if (allTags.length > 0) info.tags = allTags;
 
+  const RESERVED_META_KEYS = new Set(['uid', 'tags', 'components', 'teams', 'steps', 'setup', 'teardown']);
+  const quickInfoSet = new Set(options.quickInfoAnnotations ?? []);
+
   if (meta) {
     if (Array.isArray(meta.components) && (meta.components as string[]).length > 0) {
       info.components = meta.components as string[];
@@ -93,9 +96,15 @@ export function mapTestToPayload(
     if (Array.isArray(meta.teams) && (meta.teams as string[]).length > 0) {
       info.teams = meta.teams as string[];
     }
-    // Custom fields (e.g. jira, owner) go into info → become customs in relations
+    // Custom fields go into info, except:
+    //   - reserved keys (uid/tags/components/teams/steps/setup/teardown)
+    //   - quickInfo keys → collected into info.quickInfo as [{key, value}]
     for (const [key, value] of Object.entries(meta)) {
-      if (!['uid', 'tags', 'components', 'teams'].includes(key)) {
+      if (RESERVED_META_KEYS.has(key)) continue;
+      if (quickInfoSet.has(key)) {
+        const existing = (info.quickInfo as Array<{ key: string; value: string }> | undefined) ?? [];
+        info.quickInfo = [...existing, { key, value: String(value) }];
+      } else {
         info[key] = value;
       }
     }
@@ -119,11 +128,21 @@ export function mapTestToPayload(
     };
   }
 
+  if (Array.isArray(meta?.steps) && (meta!.steps as UReportStep[]).length > 0) {
+    payload.body = meta!.steps as UReportStep[];
+  }
+  if (Array.isArray(meta?.setup) && (meta!.setup as UReportStep[]).length > 0) {
+    payload.setup = meta!.setup as UReportStep[];
+  }
+  if (Array.isArray(meta?.teardown) && (meta!.teardown as UReportStep[]).length > 0) {
+    payload.teardown = meta!.teardown as UReportStep[];
+  }
+
   return payload;
 }
 
 // Keys on info that map to dedicated relation fields — not put into customs.
-const RELATION_INFO_KEYS = new Set(['file', 'path', 'tags', 'components', 'teams', 'duration']);
+const RELATION_INFO_KEYS = new Set(['file', 'path', 'tags', 'components', 'teams', 'duration', 'quickInfo']);
 
 export function mapToRelationPayload(
   test: UReportTestPayload,
