@@ -1,6 +1,6 @@
 {
   "name": "ureport-mocha-reporter",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Mocha reporter plugin for UReport — ships test results automatically (also works with Cypress)",
   "main": "dist/cjs/mocha.js",
   "module": "dist/esm/index.js",
