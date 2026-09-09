@@ -176,6 +176,40 @@ describe('mapTestToPayload', () => {
   });
 });
 
+describe('stepsOnFailOnly', () => {
+  const steps = [{ detail: 'step 1', status: 'PASS' as const, timestamp: '2024-01-01T00:00:00.000Z' }];
+  const meta: UReportMeta = { steps, setup: steps, teardown: steps };
+
+  it('omits steps for passed test when stepsOnFailOnly=true (default)', () => {
+    const test = makeMochaTest({ state: 'passed' });
+    const p = mapTestToPayload(test, 'b1', meta, baseOptions);
+    expect(p.body).toBeUndefined();
+    expect(p.setup).toBeUndefined();
+    expect(p.teardown).toBeUndefined();
+  });
+
+  it('omits steps for pending test when stepsOnFailOnly=true', () => {
+    const test = makeMochaTest({ state: 'pending' });
+    const p = mapTestToPayload(test, 'b1', meta, baseOptions);
+    expect(p.body).toBeUndefined();
+  });
+
+  it('includes steps for failed test when stepsOnFailOnly=true', () => {
+    const err = new Error('fail');
+    const test = makeMochaTest({ state: 'failed', err });
+    const p = mapTestToPayload(test, 'b1', meta, baseOptions);
+    expect(p.body).toBeDefined();
+    expect(p.setup).toBeDefined();
+    expect(p.teardown).toBeDefined();
+  });
+
+  it('includes steps for passed test when stepsOnFailOnly=false', () => {
+    const test = makeMochaTest({ state: 'passed' });
+    const p = mapTestToPayload(test, 'b1', meta, { ...baseOptions, stepsOnFailOnly: false });
+    expect(p.body).toBeDefined();
+  });
+});
+
 describe('mapToRelationPayload', () => {
   it('maps standard fields correctly', () => {
     const test = makeMochaTest({

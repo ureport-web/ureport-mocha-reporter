@@ -21,12 +21,15 @@ export interface UReportMochaReporterOptions {
   /** Keys passed to ureport() that should be stored as info.quickInfo entries
    *  instead of scalar info fields. Excluded from relation customs. */
   quickInfoAnnotations?: string[];
+  /** Only include steps in the payload for failed tests (default: true). */
+  stepsOnFailOnly?: boolean;
 }
 
 export const DEFAULT_OPTIONS = {
   batchSize: 50,
   saveRelations: true,
   autoDetectPlatform: true,
+  stepsOnFailOnly: true,
 } as const;
 
 const REQUIRED_FIELDS: (keyof UReportMochaReporterOptions)[] = [
@@ -70,5 +73,6 @@ export function validateOptions(options: Partial<UReportMochaReporterOptions>): 
     // Coerce string booleans from Mocha CLI reporter-options parsing
     saveRelations: coerceBool(options.saveRelations, DEFAULT_OPTIONS.saveRelations),
     autoDetectPlatform: coerceBool(options.autoDetectPlatform, DEFAULT_OPTIONS.autoDetectPlatform),
+    stepsOnFailOnly: coerceBool(options.stepsOnFailOnly, DEFAULT_OPTIONS.stepsOnFailOnly),
   } as UReportMochaReporterOptions;
 }

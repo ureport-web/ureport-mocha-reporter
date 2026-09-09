@@ -128,14 +128,18 @@ export function mapTestToPayload(
     };
   }
 
-  if (Array.isArray(meta?.steps) && (meta!.steps as UReportStep[]).length > 0) {
-    payload.body = meta!.steps as UReportStep[];
-  }
-  if (Array.isArray(meta?.setup) && (meta!.setup as UReportStep[]).length > 0) {
-    payload.setup = meta!.setup as UReportStep[];
-  }
-  if (Array.isArray(meta?.teardown) && (meta!.teardown as UReportStep[]).length > 0) {
-    payload.teardown = meta!.teardown as UReportStep[];
+  const testFailed = test.state === 'failed';
+  const skipSteps = (options.stepsOnFailOnly ?? true) && !testFailed;
+  if (!skipSteps) {
+    if (Array.isArray(meta?.steps) && (meta!.steps as UReportStep[]).length > 0) {
+      payload.body = meta!.steps as UReportStep[];
+    }
+    if (Array.isArray(meta?.setup) && (meta!.setup as UReportStep[]).length > 0) {
+      payload.setup = meta!.setup as UReportStep[];
+    }
+    if (Array.isArray(meta?.teardown) && (meta!.teardown as UReportStep[]).length > 0) {
+      payload.teardown = meta!.teardown as UReportStep[];
+    }
   }
 
   return payload;

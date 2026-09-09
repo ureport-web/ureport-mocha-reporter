@@ -70,4 +70,16 @@ describe('validateOptions', () => {
     expect(result.batchSize).toBe(10);
     expect(result.saveRelations).toBe(false);
   });
+
+  it('stepsOnFailOnly defaults to true', () => {
+    expect(validateOptions(base).stepsOnFailOnly).toBe(true);
+  });
+
+  it('respects stepsOnFailOnly: false', () => {
+    expect(validateOptions({ ...base, stepsOnFailOnly: false }).stepsOnFailOnly).toBe(false);
+  });
+
+  it('coerces stepsOnFailOnly string "false" to false', () => {
+    expect(validateOptions({ ...base, stepsOnFailOnly: 'false' as unknown as boolean }).stepsOnFailOnly).toBe(false);
+  });
 });
