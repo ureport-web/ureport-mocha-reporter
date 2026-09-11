@@ -22,6 +22,7 @@ export interface UReportBuildPayload {
   stage?: string;
   version?: string;
   start_time: string;
+  extras?: Record<string, string>;
 }
 
 export interface UReportBuildResponse {

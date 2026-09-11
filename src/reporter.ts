@@ -59,6 +59,7 @@ export class UReportMochaReporter extends Mocha.reporters.Base {
         stage: this.options.stage,
         version: this.options.version,
         start_time: new Date().toISOString(),
+        extras: this.options.customParams,
       };
 
       this.buildPromise = this.client.createBuild(this.buildPayload).then((build) => {

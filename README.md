@@ -99,6 +99,30 @@ module.exports = {
 
 That's it — every run creates a build in UReport and submits all test results automatically.
 
+> [!TIP]
+> **The config above is all you need to get started.** `serverUrl`, `apiToken`, `product`, and `type` are the only required options. The rest — `team`, `browser`, `stage`, `version`, and so on — are there when you need them, but there's no need to fill them in just because they exist. Only add a field if it genuinely reflects something meaningful about your build.
+
+## Custom Build Parameters
+
+The predefined build fields (`team`, `browser`, `device`, `stage`, `version`) cover common slicing dimensions. `customParams` lets you attach any number of arbitrary `string → string` pairs to a build for dimensions those fields don't cover — cloud region, data centre, shard, cluster, feature flag, etc.
+
+```js
+global.__ureportConfig = {
+  // ...
+  customParams: {
+    region:     process.env.AWS_REGION,   // e.g. "us-east-1"
+    datacenter: process.env.DATACENTER,   // e.g. "aws"
+    shard:      process.env.TEST_SHARD,   // e.g. "3-of-8"
+  },
+};
+```
+
+Sent as `extras` in the build payload. Keys are sorted alphabetically before storage so builds with the same parameters group correctly in UReport dashboards. Each key-value pair appears as a labelled tag in the UReport build display (`region=us-east-1`) and can be used as a filter.
+
+Use `customParams` when the value doesn't map to an existing field. Use the predefined fields (`team`, `browser`, etc.) when it does — UReport renders those with dedicated icons and queries them more efficiently.
+
+> **Note:** Predefined fields that are not set are omitted entirely and will not appear in the UReport product lane display or filter sidebar. If none of the predefined fields fit your workflow, you can rely entirely on `customParams` and the lane/filter UI will show only your custom key-value tags.
+
 ## Annotating tests with `ureport()`
 
 Annotation is **optional**. Without it, the reporter still submits every test result using the full test title as the uid.
@@ -238,6 +262,7 @@ Required options can be set via env vars as a fallback: `UREPORT_SERVER_URL`, `U
 | `saveRelations` | | | `true` | Whether to save test relations after each run |
 | `autoDetectPlatform` | | | `true` | Auto-detect `platform` and `platform_version` from OS |
 | `quickInfoAnnotations` | | | `[]` | Keys from `ureport()` to store as `info.quickInfo` entries instead of scalar fields |
+| `customParams` | | | — | Custom build parameters sent as `extras` in the build payload. Keys sorted alphabetically. Example: `{ region: 'us-east-1', datacenter: 'aws' }` |
 | `outputFile` | | | — | Path to write full run payload as JSON (useful for debugging) |
 
 ## Relations

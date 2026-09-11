@@ -23,6 +23,11 @@ export interface UReportMochaReporterOptions {
   quickInfoAnnotations?: string[];
   /** Only include steps in the payload for failed tests (default: true). */
   stepsOnFailOnly?: boolean;
+  /**
+   * Custom build parameters sent as `extras` in the build payload.
+   * Example: { region: 'us-east-1', datacenter: 'aws' }
+   */
+  customParams?: Record<string, string>;
 }
 
 export const DEFAULT_OPTIONS = {
